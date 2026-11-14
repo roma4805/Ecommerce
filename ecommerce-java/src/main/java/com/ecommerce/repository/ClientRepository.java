@@ -14,3 +14,4 @@ public class ClientRepository extends InMemoryRepository<Client, Long> {
                 .findFirst();
     }
 }
+

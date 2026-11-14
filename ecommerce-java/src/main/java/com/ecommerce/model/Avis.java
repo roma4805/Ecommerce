@@ -1,10 +1,17 @@
 package com.ecommerce.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Avis {
+public class Avis implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    /** static : partage par tous les avis, jamais serialise. */
     private static final AtomicLong SEQ = new AtomicLong(1);
 
     private Long id;
@@ -18,7 +25,7 @@ public class Avis {
         verifierNote(note);
         this.id = id;
         this.note = note;
-        this.commentaire = commentaire;
+        this.commentaire = commentaire == null ? "" : commentaire.trim();
         this.dateAvis = LocalDate.now();
         this.client = client;
         this.produit = produit;
@@ -59,8 +66,7 @@ public class Avis {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Avis)) return false;
-        Avis a = (Avis) o;
+        if (!(o instanceof Avis a)) return false;
         return Objects.equals(id, a.id);
     }
 

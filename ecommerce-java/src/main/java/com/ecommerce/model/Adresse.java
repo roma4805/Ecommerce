@@ -1,9 +1,15 @@
 package com.ecommerce.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Adresse {
-    private Long id;
+public class Adresse implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private final Long id;
     private String rue;
     private String ville;
     private String codePostal;
@@ -11,17 +17,25 @@ public class Adresse {
 
     public Adresse(Long id, String rue, String ville, String codePostal, String pays) {
         this.id = id;
-        this.rue = rue;
-        this.ville = ville;
-        this.codePostal = codePostal;
-        this.pays = pays;
+        modifierAdresse(rue, ville, codePostal, pays);
     }
 
+    /** Validation centralisee : une adresse n'est jamais dans un etat incoherent. */
     public void modifierAdresse(String rue, String ville, String codePostal, String pays) {
-        this.rue = rue;
-        this.ville = ville;
+        if (codePostal == null || !codePostal.matches("\\d{5}")) {
+            throw new IllegalArgumentException("Code postal invalide (5 chiffres) : " + codePostal);
+        }
+        this.rue = exiger(rue, "rue");
+        this.ville = exiger(ville, "ville");
         this.codePostal = codePostal;
-        this.pays = pays;
+        this.pays = exiger(pays, "pays");
+    }
+
+    private static String exiger(String valeur, String champ) {
+        if (valeur == null || valeur.isBlank()) {
+            throw new IllegalArgumentException("Le champ " + champ + " est obligatoire");
+        }
+        return valeur.trim();
     }
 
     public String afficherAdresse() {
@@ -37,8 +51,7 @@ public class Adresse {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Adresse)) return false;
-        Adresse a = (Adresse) o;
+        if (!(o instanceof Adresse a)) return false;
         return Objects.equals(id, a.id) && Objects.equals(rue, a.rue)
                 && Objects.equals(ville, a.ville) && Objects.equals(codePostal, a.codePostal)
                 && Objects.equals(pays, a.pays);

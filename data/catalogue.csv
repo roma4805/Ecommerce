@@ -1,0 +1,6 @@
+id;nom;description;prix;stock;actif;categorie
+1;Clavier mecanique;Switch rouges;450.00;10;true;Informatique
+2;Souris sans fil;2.4 GHz;150.00;25;true;Informatique
+3;Ecran 27 pouces;IPS 144 Hz;2300.00;3;true;Informatique
+4;Le Petit Prince;Poche;45.00;1;true;Livres
+ligne;cassee

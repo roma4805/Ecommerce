@@ -1,5 +1,8 @@
 package com.ecommerce.service;
 
+import com.ecommerce.exception.ProduitIntrouvableException;
+import com.ecommerce.model.Categorie;
+import com.ecommerce.model.FiltreProduit;
 import com.ecommerce.model.Produit;
 import com.ecommerce.model.ProduitResume;
 import com.ecommerce.repository.ProduitRepository;
@@ -60,11 +63,33 @@ public class ProduitService {
                 .collect(Collectors.toList());
     }
 
+    /** Exception CHECKED : l'appelant est oblige de gerer le cas "produit introuvable". */
+    public Produit trouverParId(Long id) throws ProduitIntrouvableException {
+        return repository.findById(id)
+                .orElseThrow(() -> new ProduitIntrouvableException(id));
+    }
+
+    // ---- SURCHARGE de rechercher(...) : meme nom, parametres differents ----
+
     // Lambda : Predicate | Intermediaire : filter
     public List<Produit> rechercher(String motCle) {
         Predicate<Produit> contientMotCle =
                 p -> p.getNom().toLowerCase().contains(motCle.toLowerCase());
         return repository.findBy(contientMotCle);
+    }
+
+    public List<Produit> rechercher(Categorie categorie) {
+        return rechercher(FiltreProduit.parCategorie(categorie));
+    }
+
+    public List<Produit> rechercher(BigDecimal prixMin, BigDecimal prixMax) {
+        FiltreProduit auDessusDuMin = p -> p.getPrix().compareTo(prixMin) >= 0;
+        return rechercher(auDessusDuMin.et(FiltreProduit.prixMax(prixMax)));
+    }
+
+    /** Interface fonctionnelle maison : on l'adapte en Predicate par reference de methode. */
+    public List<Produit> rechercher(FiltreProduit filtre) {
+        return repository.findBy(filtre::accepter);
     }
 
     // Terminale : anyMatch
