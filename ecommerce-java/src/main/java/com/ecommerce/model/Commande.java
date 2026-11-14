@@ -103,6 +103,9 @@ public class Commande {
         private final List<LigneCommande> lignes = new ArrayList<>();
 
         public Builder(Client client) {
+            if (client == null) {
+                throw new IllegalArgumentException("Le client est obligatoire");
+            }
             this.client = client;
         }
 

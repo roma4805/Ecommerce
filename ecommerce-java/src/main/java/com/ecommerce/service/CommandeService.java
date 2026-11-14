@@ -7,7 +7,9 @@ import com.ecommerce.model.LigneCommande;
 import com.ecommerce.repository.CommandeRepository;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,6 +58,25 @@ public class CommandeService {
     public Map<StatutCommande, Long> compterParStatut() {
         return repository.findAll().stream()
                 .collect(Collectors.groupingBy(Commande::getStatut, Collectors.counting()));
+    }
+
+    public EnumMap<StatutCommande, List<Commande>> commandesParStatut() {
+        EnumMap<StatutCommande, List<Commande>> resultat = new EnumMap<>(StatutCommande.class);
+        for (StatutCommande statut : StatutCommande.values()) {
+            resultat.put(statut, new ArrayList<>());
+        }
+        repository.findAll().forEach(commande ->
+                resultat.get(commande.getStatut()).add(commande));
+        return resultat;
+    }
+
+    public Map<Client, BigDecimal> totalParClient() {
+        return repository.findAll().stream()
+                .filter(commande -> commande.getStatut() != StatutCommande.ANNULEE)
+                .collect(Collectors.toMap(
+                        Commande::getClient,
+                        Commande::getMontantTotal,
+                        BigDecimal::add));
     }
 
     // Terminale : count

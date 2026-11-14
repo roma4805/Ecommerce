@@ -59,12 +59,12 @@ public class Categorie implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Categorie c)) return false;
-        return Objects.equals(id, c.id) && Objects.equals(nom, c.nom);
+        return Objects.equals(id, c.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, nom);
+        return Objects.hash(id);
     }
 
     @Override

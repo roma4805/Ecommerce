@@ -8,8 +8,12 @@ import java.io.Serial;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -48,15 +52,55 @@ public final class Client extends Utilisateur {
                 .collect(Collectors.toList());
     }
 
-    public void ajouterAuPanier(Produit p, int quantite) {
-        if (!p.isActif()) {
-            throw new IllegalArgumentException("Produit inactif : " + p.getNom());
-        }
-        if (!p.verifierStock(quantite)) {
-            throw new StockInsuffisantException(p.getNom(), quantite, p.getStock());
-        }
-        panier.ajouterProduit(p, quantite);
+   
+public void ajouterAuPanier(Produit p, int quantite) {
+    Objects.requireNonNull(p, "Produit obligatoire");
+
+    if (quantite <= 0) {
+        throw new IllegalArgumentException("Quantite invalide");
     }
+
+    if (!p.isActif()) {
+        throw new IllegalArgumentException("Produit inactif : " + p.getNom());
+    }
+
+    int quantiteTotale = quantite;
+
+    for (LignePanier ligne : panier.getLignes()) {
+        if (ligne.getProduit().equals(p)) {
+            quantiteTotale += ligne.getQuantite();
+            break;
+        }
+    }
+
+    if (!p.verifierStock(quantiteTotale)) {
+        throw new StockInsuffisantException(
+            p.getNom(), quantiteTotale, p.getStock()
+        );
+    }
+
+    panier.ajouterProduit(p, quantite);
+}
+
+public void modifierQuantitePanier(Produit p, int quantite) {
+    Objects.requireNonNull(p, "Produit obligatoire");
+
+    if (quantite <= 0) {
+        throw new IllegalArgumentException("Quantite invalide");
+    }
+
+    if (!p.isActif()) {
+        throw new IllegalArgumentException("Produit inactif : " + p.getNom());
+    }
+
+    if (!p.verifierStock(quantite)) {
+        throw new StockInsuffisantException(
+            p.getNom(), quantite, p.getStock()
+        );
+    }
+
+    panier.modifierQuantite(p, quantite);
+}
 
     public Commande passerCommande() {
         if (panier.getLignes().isEmpty()) {
@@ -95,6 +139,23 @@ public final class Client extends Utilisateur {
 
     public List<Commande> consulterCommandes() {
         return Collections.unmodifiableList(commandes);
+    }
+
+    public Set<Categorie> getCategoriesAchetees() {
+        Set<Categorie> categories = new HashSet<>();
+        commandes.stream()
+                .flatMap(commande -> commande.getLignes().stream())
+                .map(ligne -> ligne.getProduit().getCategorie())
+                .filter(Objects::nonNull)
+                .forEach(categories::add);
+        return Collections.unmodifiableSet(categories);
+    }
+
+    public TreeSet<Categorie> getCategoriesAcheteesTriees() {
+        TreeSet<Categorie> categories = new TreeSet<>(
+                Comparator.comparing(Categorie::getNom).thenComparing(Categorie::getId));
+        categories.addAll(getCategoriesAchetees());
+        return categories;
     }
 
     public void ajouterAdresse(Adresse a) {
